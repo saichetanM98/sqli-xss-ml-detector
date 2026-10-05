@@ -1,0 +1,27 @@
+{
+  "project_name": "Adaptive Security Gateway - SQLi & XSS Detection",
+  "version": "1.0.0",
+  "workflow": {
+    "mode": "interactive",
+    "verification_level": "standard",
+    "atomic_commits": true
+  },
+  "tech_stack": {
+    "gateway": "Flask",
+    "ml_framework": "PyTorch",
+    "cuda_enabled": true,
+    "primary_database": "MongoDB",
+    "session_cache": "Flask-Caching (SimpleCache)",
+    "dashboard": "React (Vite)",
+    "client_cache": "node-cache"
+  },
+  "dataset_spec": {
+    "num_classes": 3,
+    "classes": {
+      "0": "benign",
+      "1": "sqli",
+      "2": "xss"
+    },
+    "artifacts_dir": "ml/artifacts"
+  }
+}

@@ -1,12 +1,15 @@
 """Flask Application Factory for Adaptive Security Gateway."""
 
 import logging
+import os
+import torch
 from flask import Flask, jsonify
 from flask_cors import CORS
 from gateway.config import Config
 from gateway.routes.predict_routes import predict_bp
 from gateway.routes.incident_routes import incident_bp
 from gateway.routes.analytics_routes import analytics_bp
+from gateway.services.db import get_db_status
 from ml.inference import load_model
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -21,7 +24,7 @@ def create_app(config_class=Config) -> Flask:
     # Enable Cross-Origin Resource Sharing for dashboard
     CORS(app)
 
-    # Attempt to load PyTorch model weights if present
+    # Attempt to load PyTorch model weights and vocab if present
     load_model(config_class.MODEL_PATH, config_class.VOCAB_PATH)
 
     # Register blueprints
@@ -31,7 +34,15 @@ def create_app(config_class=Config) -> Flask:
 
     @app.route("/health", methods=["GET"])
     def health_check():
-        return jsonify({"status": "healthy", "service": "adaptive-security-gateway"}), 200
+        cuda_status = torch.cuda.is_available()
+        return jsonify({
+            "status": "healthy",
+            "service": "adaptive-security-gateway",
+            "cuda_available": cuda_status,
+            "device": torch.cuda.get_device_name(0) if cuda_status else "cpu",
+            "vocab_loaded": os.path.exists(config_class.VOCAB_PATH),
+            "database": get_db_status()
+        }), 200
 
     @app.errorhandler(404)
     def not_found(error):

@@ -16,18 +16,30 @@ _vocab: Optional[Dict[str, int]] = None
 _device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def load_model(model_path: str = "ml/artifacts/model.pt", vocab_path: str = "ml/artifacts/vocab.json"):
+def load_model(model_path: Optional[str] = None, vocab_path: str = "ml/artifacts/vocab.json"):
     """Load model checkpoint and vocabulary dictionary."""
     global _model, _vocab
     if os.path.exists(vocab_path):
         with open(vocab_path, "r", encoding="utf-8") as f:
             _vocab = json.load(f)
-    if os.path.exists(model_path):
+
+    # Determine model path
+    if model_path is None:
+        if os.path.exists("ml/artifacts/best_model.pt"):
+            model_path = "ml/artifacts/best_model.pt"
+        elif os.path.exists("ml/artifacts/model.pt"):
+            model_path = "ml/artifacts/model.pt"
+
+    if model_path and os.path.exists(model_path):
         from ml.model import PayloadClassifier
 
-        vocab_size = len(_vocab) if _vocab else 128
+        vocab_size = len(_vocab) if _vocab else 170
         _model = PayloadClassifier(vocab_size=vocab_size)
-        _model.load_state_dict(torch.load(model_path, map_location=_device))
+        loaded = torch.load(model_path, map_location=_device)
+        if isinstance(loaded, dict) and "model_state_dict" in loaded:
+            _model.load_state_dict(loaded["model_state_dict"])
+        else:
+            _model.load_state_dict(loaded)
         _model.to(_device)
         _model.eval()
         logger.info("Loaded model from %s on device %s", model_path, _device)
