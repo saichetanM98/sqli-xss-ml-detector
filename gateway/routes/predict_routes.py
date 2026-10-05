@@ -1,5 +1,7 @@
 """Route blueprint for /predict and live request inspection pipeline."""
 
+import time
+import logging
 from flask import Blueprint, request, jsonify
 from gateway.pipeline.parser import parse_request
 from gateway.pipeline.preprocess import preprocess_payload
@@ -13,24 +15,69 @@ from gateway.pipeline.decision_engine import evaluate_decision
 from gateway.pipeline.policy_engine import enforce_policy
 from gateway.services.incident_service import log_incident
 
+logger = logging.getLogger(__name__)
+
 predict_bp = Blueprint("predict", __name__)
+
+
+def compute_risk_level(risk_score: float, verdict: str, label: str) -> str:
+    """Map risk score, verdict, and ML detection label to standardized severity level."""
+    if verdict == "BLOCK" or risk_score >= 80.0 or label in ("sqli", "xss"):
+        return "CRITICAL"
+    elif risk_score >= 60.0:
+        return "HIGH"
+    elif risk_score >= 40.0 or verdict == "MONITOR":
+        return "MEDIUM"
+    return "LOW"
 
 
 @predict_bp.route("/predict", methods=["POST"])
 def inspect_request():
-    """Inspect an incoming request through the 14-stage security pipeline."""
+    """
+    Inspect an incoming request through the 14-stage security pipeline.
+
+    Accepts:
+    - Raw request dictionary (method, path, headers, query_params, body, ip)
+    - Or direct inspection payload: {"payload": "..."} / {"text": "..."}
+
+    Returns structured response:
+    {
+        "status": "success",
+        "label": "sqli",
+        "confidence": 0.985,
+        "risk_level": "CRITICAL",
+        "latency_ms": 4.2,
+        "verdict": "BLOCK",
+        "risk_score": 69.3,
+        "incident_id": "...",
+        "data": { ... }
+    }
+    """
+    start_time = time.perf_counter()
+
     body = request.get_json(silent=True)
     if body is None:
-        return jsonify({"success": False, "data": None, "error": "Invalid or missing JSON body"}), 400
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "success": False,
+                    "data": None,
+                    "error": "Invalid or missing JSON body",
+                }
+            ),
+            400,
+        )
 
     # 1-2. Ingress & Parse
     parsed = parse_request(body)
 
-    # 3. Preprocess
+    # 3. Preprocess & Canonicalize
     cleaned_payload = preprocess_payload(parsed["raw_payload"])
 
     # 4. ML Detection
     detection = detect_attack(cleaned_payload)
+    detected_label = detection.get("label", "benign")
 
     # 5. Threat Intel
     intel = check_threat_intel(parsed["ip"])
@@ -59,6 +106,9 @@ def inspect_request():
     if final_verdict != "ALLOW":
         incident_record = log_incident(parsed, detection, risk_score, final_verdict)
 
+    latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
+    risk_level = compute_risk_level(risk_score, final_verdict, detected_label)
+
     status_code = 200
     if final_verdict == "BLOCK":
         status_code = 403
@@ -68,10 +118,22 @@ def inspect_request():
     return (
         jsonify(
             {
+                "status": "success",
                 "success": True,
+                "label": detected_label,
+                "confidence": detection.get("confidence", 0.0),
+                "risk_level": risk_level,
+                "risk_score": risk_score,
+                "verdict": final_verdict,
+                "latency_ms": latency_ms,
+                "incident_id": incident_record["id"] if incident_record else None,
                 "data": {
+                    "label": detected_label,
+                    "confidence": detection.get("confidence", 0.0),
                     "verdict": final_verdict,
                     "risk_score": risk_score,
+                    "risk_level": risk_level,
+                    "latency_ms": latency_ms,
                     "detection": detection,
                     "incident_id": incident_record["id"] if incident_record else None,
                 },
@@ -80,3 +142,4 @@ def inspect_request():
         ),
         status_code,
     )
+

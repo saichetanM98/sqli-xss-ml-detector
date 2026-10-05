@@ -28,7 +28,7 @@ def log_incident(
     """
     incident = {
         "id": str(uuid.uuid4()),
-        "timestamp": int(time.time()),
+        "timestamp": time.time(),
         "client_ip": request_data.get("ip"),
         "method": request_data.get("method"),
         "path": request_data.get("path"),
@@ -44,5 +44,12 @@ def log_incident(
 
 
 def get_all_incidents() -> List[Dict[str, Any]]:
-    """Retrieve list of all logged security incidents."""
+    """Retrieve list of all logged security incidents ordered newest first."""
     return sorted(_INCIDENTS, key=lambda x: x["timestamp"], reverse=True)
+
+
+def clear_incidents() -> None:
+    """Clear all logged incidents (useful for test isolation)."""
+    global _INCIDENTS
+    _INCIDENTS.clear()
+

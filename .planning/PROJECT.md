@@ -35,8 +35,15 @@ The gateway operates a 14-stage end-to-end pipeline:
 
 ---
 
+## Current State (Shipped Versions)
+- **v1.0 (Week 1 Foundation)**: Shipped 2026-10-05. Multi-encoding ingestion, character vocab (170 tokens), CNN+BiLSTM architecture, Flask gateway skeleton, React SOC shell.
+- **v2.0 (Week 2 Model & Gateway Pipeline)**: Shipped 2026-10-05. Production training on CUDA (RTX 3050), evaluation report (99.82% acc, 0.9981 Macro F1), ingress parsing & multi-pass canonicalization preprocessor, live `POST /predict` API with fail-closed security fallback, 38 passing tests.
+
+---
+
 ## 4-Week Milestone Roadmap
-- **Week 1 (Current)**: Data & Model Foundation + Skeleton Infrastructure
-- **Week 2**: Model Training on GPU + Inference Pipeline + Core Gateway Ingress/Predict
-- **Week 3**: Contextual Engines (Stages 5-11), MongoDB Persistence (Stage 12), Analytics (Stage 13), SOC Dashboard (Stage 14)
-- **Week 4**: End-to-end Integration Testing, Attack Payloads Verification, Report Generation, Demo Preparation
+- **Week 1 (v1.0)**: Data & Model Foundation + Skeleton Infrastructure [SHIPPED]
+- **Week 2 (v2.0)**: Model Training on GPU + Inference Pipeline + Core Gateway Ingress/Predict [SHIPPED]
+- **Week 3 (v3.0 - ACTIVE)**: Contextual Engines (Stages 5-11), MongoDB Persistence (Stage 12), Analytics (Stage 13), SOC Dashboard Live Feed & Replay (Stage 14)
+- **Week 4 (v4.0)**: End-to-end Integration Testing, Attack Payloads Verification, Report Generation, Demo Preparation
+
