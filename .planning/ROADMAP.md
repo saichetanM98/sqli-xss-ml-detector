@@ -14,8 +14,8 @@
 - [x] Task 2.1.3: Run training loop and export production model checkpoint `ml/artifacts/best_model.pt`.
 
 ### Wave 2.2: Model Evaluation & Metric Reporting
-- [ ] Task 2.2.1: Implement evaluation script in `ml/evaluate.py` calculating Accuracy, Precision, Recall, Macro F1, and Confusion Matrix.
-- [ ] Task 2.2.2: Run evaluation on held-out test split (5,409 samples) and export `ml/artifacts/evaluation_report.json`.
+- [x] Task 2.2.1: Implement evaluation script in `ml/evaluate.py` calculating Accuracy, Precision, Recall, Macro F1, and Confusion Matrix.
+- [x] Task 2.2.2: Run evaluation on held-out test split (6,737 samples) and export `ml/artifacts/evaluation_report.json` (Achieved Macro F1: 0.9981, Accuracy: 99.82%).
 
 ### Wave 2.3: Ingress Parser & Preprocessing Pipeline
 - [ ] Task 2.3.1: Complete deep request parser in `gateway/pipeline/parser.py` (query params, JSON body, headers, client IP).

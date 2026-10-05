@@ -1,0 +1,95 @@
+{
+  "metadata": {
+    "model_path": "ml/artifacts/best_model.pt",
+    "test_csv": "ml/artifacts/test.csv",
+    "vocab_path": "ml/artifacts/vocab.json",
+    "device": "cuda",
+    "timestamp": "2026-10-05T04:58:52Z",
+    "total_test_samples": 6737
+  },
+  "performance": {
+    "total_eval_time_sec": 0.5643,
+    "latency_ms_per_sample": 0.0838,
+    "throughput_samples_per_sec": 11938.81
+  },
+  "overall_metrics": {
+    "accuracy": 0.9982,
+    "macro_precision": 0.9983,
+    "macro_recall": 0.9978,
+    "macro_f1": 0.9981,
+    "weighted_precision": 0.9982,
+    "weighted_recall": 0.9982,
+    "weighted_f1": 0.9982,
+    "target_macro_f1_threshold": 0.9,
+    "target_met": true
+  },
+  "security_metrics": {
+    "benign_false_positive_count": 4,
+    "benign_total_samples": 3789,
+    "benign_false_positive_rate": 0.0011,
+    "attack_false_negative_count": 7,
+    "attack_total_samples": 2948,
+    "attack_false_negative_rate": 0.0024
+  },
+  "per_class_metrics": {
+    "benign": {
+      "precision": 0.9982,
+      "recall": 0.9989,
+      "f1_score": 0.9985,
+      "support": 3789
+    },
+    "sqli": {
+      "precision": 0.9982,
+      "recall": 0.9973,
+      "f1_score": 0.9977,
+      "support": 2215
+    },
+    "xss": {
+      "precision": 0.9986,
+      "recall": 0.9973,
+      "f1_score": 0.998,
+      "support": 733
+    }
+  },
+  "confusion_matrix": {
+    "matrix": [
+      [
+        3785,
+        4,
+        0
+      ],
+      [
+        5,
+        2209,
+        1
+      ],
+      [
+        2,
+        0,
+        731
+      ]
+    ],
+    "labels": [
+      "benign",
+      "sqli",
+      "xss"
+    ],
+    "detailed": {
+      "benign": {
+        "benign": 3785,
+        "sqli": 4,
+        "xss": 0
+      },
+      "sqli": {
+        "benign": 5,
+        "sqli": 2209,
+        "xss": 1
+      },
+      "xss": {
+        "benign": 2,
+        "sqli": 0,
+        "xss": 731
+      }
+    }
+  }
+}

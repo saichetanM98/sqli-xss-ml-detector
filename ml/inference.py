@@ -35,7 +35,7 @@ def load_model(model_path: Optional[str] = None, vocab_path: str = "ml/artifacts
 
         vocab_size = len(_vocab) if _vocab else 170
         _model = PayloadClassifier(vocab_size=vocab_size)
-        loaded = torch.load(model_path, map_location=_device)
+        loaded = torch.load(model_path, map_location=_device, weights_only=False)
         if isinstance(loaded, dict) and "model_state_dict" in loaded:
             _model.load_state_dict(loaded["model_state_dict"])
         else:
