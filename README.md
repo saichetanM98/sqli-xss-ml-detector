@@ -2,10 +2,10 @@
 
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
 [![PyTorch CUDA](https://img.shields.io/badge/PyTorch-CUDA%2012.9-red.svg)](https://pytorch.org/)
-[![Tests Passing](https://img.shields.io/badge/tests-75%2F75%20passing-brightgreen.svg)]()
+[![Tests Passing](https://img.shields.io/badge/tests-78%2F78%20passing-brightgreen.svg)]()
 [![Model Accuracy](https://img.shields.io/badge/accuracy-99.82%25-success.svg)]()
 [![Macro F1](https://img.shields.io/badge/Macro%20F1-0.9981-success.svg)]()
-[![Milestone 3 Shipped](https://img.shields.io/badge/release-v3.0-blue.svg)](https://github.com/saichetanM98/sqli-xss-ml-detector/releases/tag/v3.0)
+[![Final Release Shipped](https://img.shields.io/badge/release-v4.0-blue.svg)](https://github.com/saichetanM98/sqli-xss-ml-detector/releases/tag/v4.0)
 
 An intelligent, context-aware reverse proxy and Web Application Firewall (WAF) designed to detect and block **SQL Injection (SQLi)** and **Cross-Site Scripting (XSS)** attacks in real-time.
 
@@ -28,7 +28,7 @@ Unlike legacy signature-based WAFs that rely on brittle regex patterns vulnerabl
 - **Deterministic 7-Level Policy Engine**: Enforces zero-tolerance policies (High-confidence ML attacks $\ge 0.90 \to \text{BLOCK}$, Rate violations $\to \text{RATE\_LIMIT}$, Analyst Whitelist/Blacklist overrides).
 - **MongoDB Persistence & Memory Fallback**: Robust incident storage and indexing in MongoDB (`adaptive_security_gateway`) with automatic fail-safe in-memory caching.
 - **Interactive React SOC Command Dashboard**: Real-time 3s auto-polling, forensic drill-down modal, raw vs decoded payload viewer, risk decomposition bars, and human-in-the-loop Analyst Action Center.
-- **Comprehensive Test Coverage**: **75/75 passing unit & integration tests** across ML, pipeline, risk fusion, persistence, and REST APIs.
+- **Comprehensive Test Coverage**: **78/78 passing unit & integration tests** across ML, pipeline, risk fusion, persistence, and REST APIs.
 
 ---
 
@@ -261,6 +261,12 @@ sqli-xss-ml-detector/
 │   ├── REQUIREMENTS.md         # Active milestone requirements (Phase 3)
 │   ├── ROADMAP.md              # Multi-phase roadmap tracker
 │   └── STATE.md                # System state and decisions
+├── docs/                       # Project documentation and test plans
+│   ├── DEMO_SCRIPT.md          # Live presentation script
+│   ├── FINAL_REPORT.md         # Final academic benchmark report
+│   └── MANUAL_UAT_TEST_CASES.md# Manual test cases for testing via Postman
+├── scripts/                    # Utility scripts
+│   └── attack_simulation.py    # Automated test harness for evasive payloads
 ├── gateway/                    # Flask Application & 14-Stage Pipeline
 │   ├── app.py                  # Application factory with CORS, health routes, and blueprints
 │   ├── config.py               # Gateway thresholds, weights, and model paths
@@ -289,7 +295,9 @@ sqli-xss-ml-detector/
 │       ├── test_predict.py     # Live /predict attack & fail-closed tests
 │       ├── test_contextual_engines.py # Threat Intel, Device, Session, Behavior tests
 │       ├── test_risk_and_policy.py    # Risk fusion, decision, and policy override tests
-│       └── test_incident_and_analytics.py # MongoDB persistence & analytics tests
+│       ├── test_incident_and_analytics.py # MongoDB persistence & analytics tests
+│       ├── test_fail_closed.py        # Validates secure memory fallback on component disconnects
+│       └── test_tamper_resistance.py  # Validates session tracking against proxy header tampering
 ├── ml/                         # Machine Learning Subsystem
 │   ├── artifacts/              # Model weights (best_model.pt), vocab.json, evaluation_report.json
 │   ├── data/                   # Dataset loader and tokenization utilities
@@ -339,7 +347,7 @@ pip install -r requirements.txt
 
 ### 3. Run Automated Tests
 
-Verify that all **75 unit and integration tests** pass:
+Verify that all **78 unit and integration tests** pass:
 
 ```bash
 python -m pytest
@@ -365,10 +373,10 @@ The dashboard UI will launch on `http://localhost:5173` (or port specified by Vi
 
 ## 🗺️ Project Roadmap
 
-- [x] **Week 1: Data & Model Foundation (`v1.0`)** — Ingested 54k samples, 170-char token vocab, CNN+BiLSTM forward pass, Flask gateway skeleton, React SOC shell.
-- [x] **Week 2: Model Training & Core Gateway Pipeline (`v2.0`)** — Trained on CUDA (99.72% val acc), evaluated on 6,737 test payloads (99.82% acc, 0.9981 Macro F1), ingress parser, recursive preprocessor, live `/predict` API with fail-closed security.
+- [x] **Week 1: Data & Model Foundation (`v1.0 - SHIPPED`)** — Ingested 54k samples, 170-char token vocab, CNN+BiLSTM forward pass, Flask gateway skeleton, React SOC shell.
+- [x] **Week 2: Model Training & Core Gateway Pipeline (`v2.0 - SHIPPED`)** — Trained on CUDA (99.72% val acc), evaluated on 6,737 test payloads (99.82% acc, 0.9981 Macro F1), ingress parser, recursive preprocessor, live `/predict` API with fail-closed security.
 - [x] **Week 3: Contextual Engines, Persistence & SOC Dashboard (`v3.0 - SHIPPED`)** — Threat Intel, Session Manager with `Flask-Caching`, Device Profiler, Behavior Anomaly Engine, MongoDB Persistence, Analytics API, and full React SOC Dashboard live feed & drill-down.
-- [ ] **Week 4: Security Hardening, E2E Testing & Live Demo (`v4.0 - ACTIVE`)** — Evasion attack vectors, client tamper testing, final project report, and demo rehearsal.
+- [x] **Week 4: Security Hardening, E2E Testing & Live Demo (`v4.0 - SHIPPED`)** — Evasion attack vectors, client tamper testing, final project report, and demo rehearsal.
 
 ---
 
