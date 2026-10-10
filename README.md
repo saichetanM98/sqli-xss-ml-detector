@@ -1,382 +1,266 @@
-# AI-Based Adaptive Security Gateway (SQLi & XSS Detection)
+# Adaptive Security Gateway & ML Detector
 
-[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
-[![PyTorch CUDA](https://img.shields.io/badge/PyTorch-CUDA%2012.9-red.svg)](https://pytorch.org/)
-[![Tests Passing](https://img.shields.io/badge/tests-78%2F78%20passing-brightgreen.svg)]()
-[![Model Accuracy](https://img.shields.io/badge/accuracy-99.82%25-success.svg)]()
-[![Macro F1](https://img.shields.io/badge/Macro%20F1-0.9981-success.svg)]()
-[![Final Release Shipped](https://img.shields.io/badge/release-v4.0-blue.svg)](https://github.com/saichetanM98/sqli-xss-ml-detector/releases/tag/v4.0)
-
-An intelligent, context-aware reverse proxy and Web Application Firewall (WAF) designed to detect and block **SQL Injection (SQLi)** and **Cross-Site Scripting (XSS)** attacks in real-time.
-
-Unlike legacy signature-based WAFs that rely on brittle regex patterns vulnerable to evasion, this gateway couples a **character-level hybrid deep learning model (CNN + BiLSTM)** with a **14-stage defense-in-depth contextual pipeline**, MongoDB incident persistence, and a real-time **React SOC Analyst Command Dashboard**.
+An intelligent, real-time Adaptive Security Gateway designed to detect and block SQL Injection (SQLi) and Cross-Site Scripting (XSS) attacks. Powered by a Deep Learning model built with PyTorch and a robust 14-stage inspection pipeline, this gateway provides enterprise-grade application security with automated risk scoring and incident management.
 
 ---
 
-## 🌟 Key Highlights & Capabilities
+## 📖 Overview
 
-- **Deep Learning Core**: Character-level CNN + BiLSTM model trained on 54,084 samples across 4 public benchmarks.
-- **State-of-the-Art Evaluation**: **99.82% test accuracy** and **0.9981 Macro F1** on 6,737 held-out payloads, with an attack bypass rate of only **0.24%** (7 misses out of 2,948 attacks).
-- **Sub-Millisecond Inference**: Model executes in **0.08 ms per sample** on GPU (~11,900 requests/sec throughput).
-- **Multi-Pass Canonicalization**: Defeats evasive encoding techniques including double URL encoding (`%2527` $\to$ `'`), HTML entity obfuscation (`&amp;lt;script&amp;gt;` $\to$ `<script>`), null-byte injection (`%00`), and zero-width unicode control characters (`\u200b`).
-- **Contextual Threat Intelligence**: Sub-millisecond offline IP reputation lookup, bogon/private network detection (`10.x`, `192.168.x`, `127.x`), and CIDR matching for Tor exit nodes and malicious scanner networks.
-- **Stateful Session Tracking**: Server-side sliding-window rate tracking backed by `Flask-Caching` (`SimpleCache`) to prevent client header tampering (10s burst & 60s sustained windows).
-- **Device Fingerprinting & Scanner Detection**: SHA-256 canonical header fingerprinting and regex-based detection of offensive tools (`sqlmap`, `nikto`, `nmap`, `masscan`, `wpscan`, `curl`, `python-requests`).
-- **Dynamic Behavioral Anomaly Scoring**: Evaluates velocity surges, repeated evasion attempts, and directory traversal probes (`/admin`, `/.env`, `../`).
-- **Weighted Multi-Factor Risk Fusion**: Exact weighted mathematical risk synthesis:
-  $$\text{Risk} = \min(100.0, (\text{ML\_Score} \times 0.70) + (\text{Threat\_Intel} \times 0.15) + (\text{Behavior} \times 0.15))$$
-- **Deterministic 7-Level Policy Engine**: Enforces zero-tolerance policies (High-confidence ML attacks $\ge 0.90 \to \text{BLOCK}$, Rate violations $\to \text{RATE\_LIMIT}$, Analyst Whitelist/Blacklist overrides).
-- **MongoDB Persistence & Memory Fallback**: Robust incident storage and indexing in MongoDB (`adaptive_security_gateway`) with automatic fail-safe in-memory caching.
-- **Interactive React SOC Command Dashboard**: Real-time 3s auto-polling, forensic drill-down modal, raw vs decoded payload viewer, risk decomposition bars, and human-in-the-loop Analyst Action Center.
-- **Comprehensive Test Coverage**: **78/78 passing unit & integration tests** across ML, pipeline, risk fusion, persistence, and REST APIs.
+The Adaptive Security Gateway sits in front of your web applications, intercepting traffic to inspect payloads for malicious intent. Unlike traditional WAFs that rely solely on static signatures, this system leverages a character-level neural network to understand context and detect evasive payloads. It pairs this ML engine with device profiling, behavioral analysis, and threat intelligence to compute a dynamic risk score, ensuring a highly accurate security posture with minimal false positives.
 
 ---
 
-## 🛡️ 14-Stage Pipeline Architecture
+## ✨ Features
 
-```
-HTTP Request
-     │
-     ▼
-[Stage 1: Request Ingress]  ─── Reverse proxy entry point (Flask Gateway)
-     │
-     ▼
-[Stage 2: Deep Parser]     ─── Query params, JSON bodies, forms, proxy-aware client IP, security headers
-     │
-     ▼
-[Stage 3: Canonicalizer]   ─── Multi-pass recursive URL decode, HTML unescape, null-byte strip
-     │
-     ▼
-[Stage 4: ML Detection]    ─── PyTorch CNN + BiLSTM (best_model.pt) with fail-closed fallback
-     │
-     ▼
-[Stage 5: Threat Intel]    ─── Curated IP reputation, bogon/private network classification
-     │
-     ▼
-[Stage 6: Session Tracker] ─── Server-side SimpleCache sliding windows (10s burst & 60s sustained)
-     │
-     ▼
-[Stage 7: Device Profile]  ─── SHA-256 header fingerprinting & scanner detection (sqlmap, nikto, curl)
-     │
-     ▼
-[Stage 8: Behavior Engine] ─── Dynamic velocity surge and anomalous traversal scoring
-     │
-     ▼
-[Stage 9: Risk Engine]     ─── Weighted risk fusion: min(100, (ML*0.70) + (Intel*0.15) + (Behavior*0.15))
-     │
-     ▼
-[Stage 10: Decision]       ─── Multi-threshold mapping: ALLOW (<40) | MONITOR (40-79) | BLOCK (>=80)
-     │
-     ▼
-[Stage 11: Policy Engine]  ─── Deterministic overrides (Whitelist, Blacklist, Rate Limit, ML >= 0.90)
-     │
-     ▼
-[Stage 12: Incidents]      ─── MongoDB persistence & triage indexing (OPEN, TP, FP, RESOLVED)
-     │
-     ▼
-[Stage 13: Analytics]      ─── Threat volume trends, attack breakdown, top offender rankings
-     │
-     ▼
-[Stage 14: SOC Dashboard]  ─── Real-time React dashboard with forensic modal & analyst override actions
+- **Deep Learning Detection:** Custom PyTorch neural network trained for high-confidence SQLi and XSS identification.
+- **14-Stage Inspection Pipeline:** Modular request processing including canonicalization, device profiling, session tracking, and threat intelligence integration.
+- **Dynamic Risk Engine:** Calculates real-time risk scores based on ML confidence, IP reputation, and anomalous behavioral patterns.
+- **Fail-Closed Security Posture:** Built-in heuristic signature fallbacks guarantee protection even if the ML model is offline or degraded.
+- **SOC Dashboard:** A modern React + Vite frontend for analysts to triage incidents, monitor traffic, and review blocked requests.
+- **Graceful Degradation:** Automatic fallback from MongoDB to in-memory storage if the database becomes unreachable.
+- **Incident Management API:** RESTful endpoints to query, filter, and update incident statuses (e.g., True/False Positive resolutions).
+
+---
+
+## 🛠 Tech Stack
+
+### Core & Backend
+- **Python** 3.9+
+- **Flask** (>=2.3.0) — API framework
+- **PyMongo** — Database driver for MongoDB
+- **Pytest & Flake8** — Testing and Code Quality
+
+### Machine Learning
+- **PyTorch** (>=2.0.0) — Core deep learning framework
+- **Scikit-learn, Pandas, NumPy** — Data preprocessing and evaluation
+
+### Frontend (SOC Dashboard)
+- **React** (18.2.0)
+- **Vite** (4.4.0) — Build tool and dev server
+- **Lucide React** — Iconography
+
+---
+
+## 🏗 Architecture Overview
+
+The gateway operates on a modular pipeline architecture. Every incoming request passes through 14 distinct stages before a final policy decision (`ALLOW`, `MONITOR`, `RATE_LIMIT`, or `BLOCK`) is reached.
+
+```mermaid
+graph TD
+    A[Incoming Request] --> B[Parse & Ingress]
+    B --> C[Preprocess & Canonicalize]
+    C --> D[ML Detection Engine]
+    C --> E[Heuristic Fallback]
+    D --> F[Threat Intel Lookup]
+    E --> F
+    F --> G[Device & Session Profiler]
+    G --> H[Behavioral Engine]
+    H --> I[Risk Engine]
+    I --> J[Decision Engine]
+    J --> K[Policy Enforcement]
+    K -->|BLOCK/RATE_LIMIT| L[Incident Service DB]
+    K -->|ALLOW| M[Upstream Application]
 ```
 
 ---
 
-## 📊 Benchmark & Evaluation Metrics
+## 📂 Project Structure
 
-Evaluated on **6,737 held-out payloads** in `ml/artifacts/test.csv`:
-
-| Class | Precision | Recall | F1-Score | Support | Description |
-|---|---|---|---|---|---|
-| **Benign (0)** | **0.9982** | **0.9989** | **0.9985** | 3,789 | Legitimate queries, JSON bodies, natural text |
-| **SQLi (1)** | **0.9982** | **0.9973** | **0.9977** | 1,481 | Union select, tautologies, stacked queries, blind SQLi |
-| **XSS (2)** | **0.9986** | **0.9973** | **0.9980** | 1,467 | Script tags, DOM events, svg/img vectors, JS protocols |
-| **Macro Average** | **0.9983** | **0.9978** | **0.9981** | 6,737 | Target was `> 0.90` (Exceeded by +9.8%) |
-| **Weighted Average** | **0.9982** | **0.9982** | **0.9982** | 6,737 | Overall Model Accuracy: **99.82%** |
-
-- **Attack False Negative Rate (Bypass Rate)**: **0.24%** (Only 7 misses out of 2,948 real attacks)
-- **Benign False Positive Rate**: **0.11%** (Only 4 false alarms out of 3,789 benign requests)
-- **GPU Throughput**: ~11,900 samples/sec (0.08 ms latency per payload on NVIDIA RTX 3050 Laptop GPU)
-
----
-
-## 🔌 API Reference
-
-### 1. Request Inspection (`POST /predict`)
-
-Accepts raw HTTP request data or direct testing payloads.
-
-```http
-POST /predict HTTP/1.1
-Host: localhost:5000
-Content-Type: application/json
-
-{
-  "method": "POST",
-  "path": "/login",
-  "headers": {
-    "User-Agent": "Mozilla/5.0",
-    "X-Forwarded-For": "203.0.113.42"
-  },
-  "payload": "' OR 1=1 --"
-}
-```
-
-#### Response (`HTTP 403 Forbidden` for blocked attacks):
-```json
-{
-  "status": "success",
-  "success": true,
-  "label": "sqli",
-  "confidence": 0.9998,
-  "risk_level": "CRITICAL",
-  "risk_score": 82.74,
-  "verdict": "BLOCK",
-  "latency_ms": 5.94,
-  "incident_id": "5590fa49-3b71-4f3a-9946-93c3f04bb1e4",
-  "data": {
-    "label": "sqli",
-    "confidence": 0.9998,
-    "verdict": "BLOCK",
-    "risk_score": 82.74,
-    "risk_level": "CRITICAL",
-    "latency_ms": 5.94,
-    "detection": {
-      "label": "sqli",
-      "confidence": 0.9998,
-      "latency_ms": 2.24
-    },
-    "risk_components": {
-      "ml": 69.99,
-      "threat_intel": 12.75,
-      "behavior": 0.0
-    },
-    "raw_scores": {
-      "ml": 99.98,
-      "threat_intel": 85.0,
-      "behavior": 0.0
-    },
-    "decision": {
-      "verdict": "BLOCK",
-      "risk_level": "CRITICAL",
-      "reason": "Risk score (82.74) exceeds critical blocking threshold (80)"
-    },
-    "policy_override": {
-      "final_verdict": "BLOCK",
-      "override_applied": false,
-      "override_reason": "Zero-Tolerance Policy: High-confidence SQLI (100.0%)"
-    },
-    "threat_intel": {
-      "ip": "203.0.113.42",
-      "is_known_malicious": true,
-      "reputation_score": 85.0,
-      "country": "Flagged Subnet"
-    },
-    "device_profile": {
-      "fingerprint": "57e7f000a77b83f9",
-      "is_scanner": false,
-      "device_type": "Desktop"
-    },
-    "session": {
-      "requests_last_10s": 1,
-      "requests_last_minute": 1,
-      "is_rate_exceeded": false
-    },
-    "behavior": {
-      "behavior_score": 0.0,
-      "is_anomalous": false,
-      "anomalies": []
-    },
-    "incident_id": "5590fa49-3b71-4f3a-9946-93c3f04bb1e4"
-  },
-  "error": null
-}
-```
-
-### 2. Incident Management (`/api/incidents`)
-
-- `GET /api/incidents?verdict=BLOCK&attack_type=sqli&status=OPEN&limit=50&offset=0`
-  - Retrieves paginated list of security incidents with multi-field filters.
-- `GET /api/incidents/<id>`
-  - Retrieves forensic details for a single incident.
-- `POST /api/incidents/<id>/status`
-  - Updates incident triage status (`TRUE_POSITIVE`, `FALSE_POSITIVE`, `RESOLVED`, `OPEN`) and analyst notes.
-
-### 3. Threat Analytics (`/api/analytics`)
-
-- `GET /api/analytics/summary`
-  - Returns total incidents, blocked counts, block rate %, attack distribution, and average risk score.
-- `GET /api/analytics/trends?limit=12`
-  - Returns chronological bucketed timeline data for charting.
-- `GET /api/analytics/top-ips?limit=10`
-  - Returns top offending client IP addresses ranked by incident count.
-
-### 4. Firewall Policy Overrides (`/api/policy/override-ip`)
-
-- `GET /api/policy/override-ip`
-  - Lists all active analyst IP overrides.
-- `POST /api/policy/override-ip`
-  - Adds or removes an IP from Whitelist or Blacklist:
-    ```json
-    {
-      "ip": "203.0.113.88",
-      "action": "WHITELIST",
-      "reason": "Verified partner node"
-    }
-    ```
-
-### 5. Gateway Health Check (`GET /health`)
-
-```http
-GET /health HTTP/1.1
-Host: localhost:5000
-```
-
-#### Response (`HTTP 200 OK`):
-```json
-{
-  "status": "healthy",
-  "service": "adaptive-security-gateway",
-  "cuda_available": true,
-  "device": "NVIDIA GeForce RTX 3050 Laptop GPU",
-  "vocab_loaded": true,
-  "model_loaded": true,
-  "database": {
-    "status": "connected",
-    "type": "mongodb"
-  }
-}
-```
-
----
-
-## 📂 Repository Structure
-
-```
+```text
 sqli-xss-ml-detector/
-├── .planning/                  # Project roadmap, state, audits, and requirements
-│   ├── milestones/             # Archived v1.0 and v2.0 roadmap and requirements
-│   ├── phases/                 # Execution summaries for each phase (01, 02, 03)
-│   ├── PROJECT.md              # Architectural context and milestone history
-│   ├── REQUIREMENTS.md         # Active milestone requirements (Phase 3)
-│   ├── ROADMAP.md              # Multi-phase roadmap tracker
-│   └── STATE.md                # System state and decisions
-├── docs/                       # Project documentation and test plans
-│   ├── DEMO_SCRIPT.md          # Live presentation script
-│   ├── FINAL_REPORT.md         # Final academic benchmark report
-│   └── MANUAL_UAT_TEST_CASES.md# Manual test cases for testing via Postman
-├── scripts/                    # Utility scripts
-│   └── attack_simulation.py    # Automated test harness for evasive payloads
-├── gateway/                    # Flask Application & 14-Stage Pipeline
-│   ├── app.py                  # Application factory with CORS, health routes, and blueprints
-│   ├── config.py               # Gateway thresholds, weights, and model paths
-│   ├── pipeline/               # 14-stage security inspection modules
-│   │   ├── parser.py           # Stage 2: Deep request ingress parser
-│   │   ├── preprocess.py       # Stage 3: Multi-pass canonicalizer
-│   │   ├── detection.py        # Stage 4: ML detection bridge
-│   │   ├── threat_intel.py     # Stage 5: Curated IP reputation & threat scoring
-│   │   ├── session_manager.py  # Stage 6: Server-side SimpleCache sliding windows
-│   │   ├── device_profiler.py  # Stage 7: SHA-256 header hashing & scanner detection
-│   │   ├── behavior_engine.py  # Stage 8: Behavioral anomaly scoring
-│   │   ├── risk_engine.py      # Stage 9: Weighted risk fusion (ML 70%, Intel 15%, Behavior 15%)
-│   │   ├── decision_engine.py  # Stage 10: Multi-threshold decisioning (ALLOW/MONITOR/BLOCK)
-│   │   └── policy_engine.py    # Stage 11: 7-level zero-tolerance policy overrides
-│   ├── routes/                 # Blueprint routes (/predict, /incidents, /analytics, /policy)
-│   │   ├── predict_routes.py   # POST /predict inspection route
-│   │   ├── incident_routes.py  # Incident query & triage update endpoints
-│   │   └── analytics_routes.py # Summary, trends, top IPs, and override management
-│   ├── services/               # Persistence layer
-│   │   ├── db.py               # MongoDB connector with auto in-memory fallback
-│   │   ├── incident_service.py # Indexed incident storage, search, and IP overrides
-│   │   └── analytics_service.py# Aggregation metrics, trends, and offender rankings
-│   └── tests/                  # Automated pytest test suites (75 tests)
-│       ├── test_health.py      # Health and config tests
-│       ├── test_pipeline.py    # Parser, preprocessing, and stage tests
-│       ├── test_predict.py     # Live /predict attack & fail-closed tests
-│       ├── test_contextual_engines.py # Threat Intel, Device, Session, Behavior tests
-│       ├── test_risk_and_policy.py    # Risk fusion, decision, and policy override tests
-│       ├── test_incident_and_analytics.py # MongoDB persistence & analytics tests
-│       ├── test_fail_closed.py        # Validates secure memory fallback on component disconnects
-│       └── test_tamper_resistance.py  # Validates session tracking against proxy header tampering
-├── ml/                         # Machine Learning Subsystem
-│   ├── artifacts/              # Model weights (best_model.pt), vocab.json, evaluation_report.json
-│   ├── data/                   # Dataset loader and tokenization utilities
-│   ├── model.py                # Character-level CNN + BiLSTM PyTorch architecture
-│   ├── train.py                # GPU training script with EarlyStopping & Class Weights
-│   ├── evaluate.py             # Quantitative evaluation harness
-│   ├── inference.py            # Live inference engine with fail-closed heuristic fallback
-│   └── tests/                  # Model evaluation test suite
-├── dashboard/                  # React 18 + Vite SOC Analyst Dashboard
-│   ├── src/
-│   │   ├── api/client.js       # Complete REST API client
-│   │   ├── components/
-│   │   │   ├── IncidentTable.jsx # Multi-filter table with live search & inspection
-│   │   │   └── IncidentModal.jsx # Forensic drill-down modal & Analyst Action Center
-│   │   ├── pages/Dashboard.jsx # Real-time command feed with auto-polling & KPI cards
-│   │   ├── App.jsx             # Shell layout with system health pills
-│   │   └── index.css           # Modern dark cybersecurity SOC theme
-│   └── package.json
-└── requirements.txt            # Python dependencies
+├── dashboard/               # React + Vite SOC Dashboard
+│   ├── src/                 # Frontend components and pages
+│   ├── package.json         # Node dependencies
+│   └── vite.config.js       # Vite configuration
+├── gateway/                 # Flask Security Gateway
+│   ├── pipeline/            # 14-stage security inspection modules
+│   ├── routes/              # API controllers (predict, incidents)
+│   ├── services/            # Database and incident logging services
+│   └── app.py               # Flask application factory
+├── ml/                      # PyTorch Machine Learning module
+│   ├── artifacts/           # Trained models and vocabularies
+│   ├── data/                # Training datasets
+│   ├── model.py             # Neural network architecture definition
+│   ├── inference.py         # Real-time inference logic
+│   └── train.py             # Model training routines
+├── scripts/                 # Utility scripts
+│   └── attack_simulation.py # Automated payload evasion testing
+├── docs/                    # Project documentation & UAT reports
+├── requirements.txt         # Python dependencies
+└── .env.example             # Environment variable templates
 ```
 
 ---
 
-## ⚡ Quickstart Guide
+## 🚀 Installation
 
-### 1. Prerequisites
-- Python 3.11+
-- Node.js 18+ (for SOC Dashboard)
-- MongoDB (optional; runs automatically if installed or falls back gracefully to in-memory)
-- NVIDIA GPU with CUDA 12+ (optional; CPU fallback supported automatically)
+### Prerequisites
+- Python 3.9 or higher
+- Node.js 18+ (for Dashboard)
+- MongoDB (Local or Atlas, optional but recommended)
 
-### 2. Environment Setup
-
+### 1. Clone the Repository
 ```bash
-# Clone the repository
 git clone https://github.com/saichetanM98/sqli-xss-ml-detector.git
 cd sqli-xss-ml-detector
+```
 
+### 2. Backend Setup (Gateway & ML)
+```bash
 # Create and activate virtual environment
 python -m venv .venv
-.venv\Scripts\activate        # On Windows
-# source .venv/bin/activate   # On Linux/macOS
+# On Windows:
+.venv\Scripts\activate
+# On Linux/macOS:
+# source .venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
 ```
 
-### 3. Run Automated Tests
-
-Verify that all **78 unit and integration tests** pass:
-
-```bash
-python -m pytest
-```
-
-### 4. Start the Gateway API
-
-```bash
-python -m gateway.app
-```
-The gateway will start on `http://localhost:5000`.
-
-### 5. Start the SOC Dashboard
-
+### 3. Frontend Setup (Dashboard)
 ```bash
 cd dashboard
 npm install
-npm run dev
+cd ..
 ```
-The dashboard UI will launch on `http://localhost:5173` (or port specified by Vite).
 
 ---
 
-## 🗺️ Project Roadmap
+## ⚙️ Configuration
 
-- [x] **Week 1: Data & Model Foundation (`v1.0 - SHIPPED`)** — Ingested 54k samples, 170-char token vocab, CNN+BiLSTM forward pass, Flask gateway skeleton, React SOC shell.
-- [x] **Week 2: Model Training & Core Gateway Pipeline (`v2.0 - SHIPPED`)** — Trained on CUDA (99.72% val acc), evaluated on 6,737 test payloads (99.82% acc, 0.9981 Macro F1), ingress parser, recursive preprocessor, live `/predict` API with fail-closed security.
-- [x] **Week 3: Contextual Engines, Persistence & SOC Dashboard (`v3.0 - SHIPPED`)** — Threat Intel, Session Manager with `Flask-Caching`, Device Profiler, Behavior Anomaly Engine, MongoDB Persistence, Analytics API, and full React SOC Dashboard live feed & drill-down.
-- [x] **Week 4: Security Hardening, E2E Testing & Live Demo (`v4.0 - SHIPPED`)** — Evasion attack vectors, client tamper testing, final project report, and demo rehearsal.
+Copy the example environment file and configure it to suit your deployment.
+
+```bash
+cp .env.example .env
+```
+
+### Environment Variables
+
+| Variable | Required | Default | Purpose |
+|----------|----------|---------|---------|
+| `PORT` | No | `5000` | Port for the Flask gateway API |
+| `FLASK_ENV` | No | `development` | Environment mode (`development` or `production`) |
+| `SECRET_KEY` | Yes | `dev-secret-key...` | Cryptographic key for session security |
+| `MONGO_URI` | No | `mongodb://localhost:27017...` | MongoDB connection string |
+| `MODEL_PATH` | No | `ml/artifacts/best_model.pt` | Path to the PyTorch ML checkpoint |
+| `VOCAB_PATH` | No | `ml/artifacts/vocab.json` | Path to the character vocabulary mapping |
+| `RISK_THRESHOLD_BLOCK`| No | `80` | Risk score threshold to trigger an outright block |
+| `RISK_THRESHOLD_MONITOR`| No | `40` | Risk score threshold to trigger monitoring |
+
+---
+
+## 🏃 Running the Project
+
+### 1. Start the Security Gateway
+From the root directory with your virtual environment activated:
+```bash
+python -m gateway.app
+```
+*The API will be available at `http://localhost:5000`*
+
+### 2. Start the SOC Dashboard
+Open a new terminal window:
+```bash
+cd dashboard
+npm run dev
+```
+*The dashboard will be available at `http://localhost:5173`*
+
+---
+
+## 📜 Available Scripts
+
+### Node Scripts (in `/dashboard`)
+- `npm run dev`: Starts the Vite development server.
+- `npm run build`: Compiles the React application for production deployment.
+- `npm run preview`: Locally previews the production build.
+
+### Python Scripts
+- `python scripts/attack_simulation.py`: Fires a suite of evasive SQLi and XSS payloads at the local gateway to verify detection accuracy and rate-limiting responses.
+
+---
+
+## 🔌 API Documentation
+
+### 1. Request Inspection
+`POST /predict`
+Inspects an incoming HTTP payload through the security pipeline.
+**Payload:**
+```json
+{
+  "payload": "admin' OR 1=1--",
+  "ip": "192.168.1.100",
+  "headers": {
+    "User-Agent": "Mozilla/5.0..."
+  }
+}
+```
+**Response:**
+```json
+{
+  "status": "success",
+  "label": "sqli",
+  "confidence": 0.998,
+  "risk_level": "CRITICAL",
+  "verdict": "BLOCK",
+  "risk_score": 95.5,
+  "incident_id": "64f1a2b3...",
+  "latency_ms": 12.4
+}
+```
+
+### 2. Incident Management
+`GET /api/incidents`
+Retrieve a paginated list of blocked or monitored requests. Supports query parameters for filtering (`?verdict=BLOCK&attack_type=sqli&limit=50`).
+
+`POST /api/incidents/<id>/status`
+Update the status of an incident for SOC triage.
+**Payload:**
+```json
+{
+  "status": "TRUE_POSITIVE",
+  "notes": "Verified evasive payload attempt."
+}
+```
+
+### 3. System Health
+`GET /health`
+Returns the status of the gateway, ML model memory state, CUDA availability, and database connectivity.
+
+---
+
+## 🗄 Database
+
+The application utilizes MongoDB to persist security incidents. 
+
+**Collections:**
+- `incidents`: Stores detailed telemetry of flagged requests, including ML confidence, behavioral metrics, extracted payloads, and triage status.
+
+*Note: The `gateway/services/db.py` module features a graceful fallback mechanism. If MongoDB is unreachable, the system reverts to an in-memory storage array to ensure uninterrupted protection.*
+
+---
+
+## 🧪 Testing
+
+The repository includes a comprehensive testing suite.
+To run the automated test suite:
+```bash
+pytest gateway/tests ml/tests --cov=gateway --cov=ml
+```
+
+To manually verify evasion protection against the running gateway:
+```bash
+python scripts/attack_simulation.py
+```
+
+---
+
+## 🔒 Security & Architecture Decisions
+
+1. **Character-level Neural Network:** Traditional tokenizers fail against obfuscated SQLi (e.g., `/*!50000SeLeCt*/`). A character-level vocabulary forces the model to understand structural anomalies rather than exact keywords.
+2. **Fail-Closed Heuristics:** If the PyTorch model fails to load or inference times out, the `inference.py` engine automatically falls back to strict heuristic regex evaluations, preventing traffic bypasses during degraded states.
+3. **Decoupled Risk vs. Detection:** The ML engine only classifies payloads. The `Policy Engine` interprets these classifications alongside Threat Intel and Behavior metrics to make the final `ALLOW`/`BLOCK` decision.
 
 ---
 
