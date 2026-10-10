@@ -380,6 +380,9 @@ The dashboard UI will launch on `http://localhost:5173` (or port specified by Vi
 
 ---
 
-## 👥 Authors & Academic Context
+## 👥 Authors & Team Details
 
 Developed as part of the **Mini Project (BCY586) — 2026**.
+
+- **Saichetan M** (USN: 1RN24CY040)
+- **Vishwanath** (USN: 1RN24CY053)
